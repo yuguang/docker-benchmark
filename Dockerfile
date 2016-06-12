@@ -1,4 +1,4 @@
-FROM ubuntu32
+FROM f69m/ubuntu32
 ADD . /code
 WORKDIR /code
 RUN ./setup.sh
