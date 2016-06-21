@@ -1,25 +1,6 @@
 #!/bin/sh
-wget http://www.coker.com.au/bonnie++/bonnie++-1.03e.tgz
-tar zxvf bonnie++-1.03e.tgz
-cd bonnie++-1.03e
-./configure
-make
-make install
-
-if ((1<<32)); then
-    sudo apt-get remove iperf3 libiperf0
-    wget https://iperf.fr/download/ubuntu/libiperf0_3.1.2-1_amd64.deb
-    wget https://iperf.fr/download/ubuntu/iperf3_3.1.2-1_amd64.deb
-    sudo dpkg -i libiperf0_3.1.2-1_amd64.deb iperf3_3.1.2-1_amd64.deb
-    rm libiperf0_3.1.2-1_amd64.deb iperf3_3.1.2-1_amd64.deb
-else
-    sudo apt-get remove iperf3 libiperf0
-    wget https://iperf.fr/download/ubuntu/libiperf0_3.1.2-1_i386.deb
-    wget https://iperf.fr/download/ubuntu/iperf3_3.1.2-1_i386.deb
-    sudo dpkg -i libiperf0_3.1.2-1_i386.deb iperf3_3.1.2-1_i386.deb
-    rm libiperf0_3.1.2-1_i386.deb iperf3_3.1.2-1_i386.deb
-fi
-sudo apt-get install sysbench
-
-wget http://www.cs.virginia.edu/stream/FTP/Code/stream.c
-gcc -O3 stream.c -o stream
+emerge --autounmask-write -v =app-emulation/containerd-0.2.0 =app-emulation/runc-0.1.0 =app-emulation/docker-1.11.0
+yes | etc-update --automode -3
+emerge -v =app-emulation/containerd-0.2.0 =app-emulation/runc-0.1.0 =app-emulation/docker-1.11.0
+/etc/init.d/docker restart
+git clone https://github.com/yuguang/docker-benchmark

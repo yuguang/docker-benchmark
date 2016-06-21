@@ -1,6 +1,6 @@
-FROM m0elnx/ubuntu-32bit
-ADD . /code
-WORKDIR /code
+FROM yuguang/benchmark
+ADD docker-benchmark /scripts
+WORKDIR /scripts
 RUN ./setup.sh
 RUN ./run.sh
 RUN ./collect.sh
