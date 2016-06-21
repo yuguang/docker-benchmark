@@ -1,3 +1,3 @@
 #!/bin/sh
 docker build -t benchmark .
-docker run -v /var/log:/results benchmark
+docker run -v /results:/results benchmark
