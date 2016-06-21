@@ -1,6 +1,5 @@
 FROM yuguang/benchmark
-ADD docker-benchmark /scripts
+ADD . /scripts
 WORKDIR /scripts
-RUN ./setup.sh
-RUN ./run.sh
-RUN ./collect.sh
+RUN chmod +x *.sh
+RUN ./benchmark.sh
