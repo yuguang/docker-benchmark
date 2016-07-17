@@ -6,3 +6,6 @@ emerge -v =app-emulation/containerd-0.2.0 =app-emulation/runc-0.1.0 =app-emulati
 git clone https://github.com/yuguang/docker-benchmark
 mkdir /results
 chmod -R 777 /results
+if ((1<<32)); then
+    mv Dockerfile-64 Dockerfile
+fi
