@@ -1,3 +1,4 @@
 #!/bin/sh
-cd ~/docker-benchmark
-./collect.sh
+results="results.tar.gz"
+tar czf $results /results/*log
+echo $results
