@@ -1,0 +1,101 @@
+\documentclass[11pt]{article}
+\usepackage{longtable}
+\usepackage{listings}
+\usepackage{amsmath,amsfonts,amssymb,amsthm}
+\usepackage[margin=1in]{geometry}
+\usepackage[colorlinks]{hyperref}
+\usepackage{algpseudocode}
+\usepackage{algorithmicx}
+\usepackage{listings}
+\usepackage{multirow}
+\usepackage{hyperref}
+\usepackage{fancyhdr}
+\usepackage{framed}
+\usepackage{graphicx}
+\usepackage{caption}
+\usepackage{subcaption}
+\usepackage{float}
+\usepackage{enumerate}
+\usepackage{tikz}
+\usetikzlibrary{arrows}
+\usetikzlibrary{shapes}
+
+\newcommand{\C}{{\mathbb{C}}}
+\newcommand{\F}{{\mathbb{F}}}
+\newcommand{\R}{{\mathbb{R}}}
+\newcommand{\Z}{{\mathbb{Z}}}
+\newcommand{\e}[1]{\ensuremath{\times 10^{#1}}}
+
+\newcommand{\ve}[1]{\boldsymbol{#1}}
+\newcommand{\norm}[1]{\|{#1}\|}
+\newcommand{\code}{\begingroup
+	\catcode`_=12 \docode}
+\newcommand{\docode}[2]{
+	\begin{framed}
+		\lstinputlisting[basicstyle=\ttfamily\scriptsize,language=#2,title=\underline{\texttt{#1}},tabsize=4,numbers=left]{#1}\end{framed}\endgroup}
+
+
+\setlength\parindent{0pt}
+\setlength{\parskip}{3mm plus3mm minus2mm}
+
+\lstset{basicstyle=\ttfamily,showstringspaces=false}
+\lstset{language=C++,
+	basicstyle=\ttfamily,
+	keywordstyle=\color{blue}\ttfamily,
+	stringstyle=\color{red}\ttfamily,
+	commentstyle=\color{gray}\ttfamily}
+
+\begin{document}
+	
+	\thispagestyle{empty}
+	%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+	
+	\title{Performance Evaluation of Docker}
+	
+	\author{Yuguang Zhang \\ University of Waterloo}
+	
+	\maketitle
+	
+	%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\section{Abstract}
+Virtualization of operating systems provides a common way to deploy complex
+applications to a cloud environment. A new form of virtualization based on containers
+promises to offer better performance than traditional approaches with a virtual machine.
+This paper explores a method of running performance evaluation experiments using
+docker and compares container based virtualization with native performance. Several
+benchmark tools are used to measure overhead in terms of processing, storage,
+memory and network. [Summary of results]
+
+
+\section{Background}
+Container-based virtualization benefits
+
+Container-based virtualization drawbacks
+- security
+	
+\section{Related Works}
+Morabit et al. \cite{morabit} compared hypervisor and container performance with running applications in a native environment. They used the Y-cruncher, NBENCH, and Linpack to measure CPU performance under KVM, Docker, LXC, and OSV. For disk I/O performance, sequential reads and writes of 25 GB was tested with Bonnie++. The results show that disk I/O efficiency is still a bottleneck with KVM. LXC and Docker introduce negligible overhead, though there is a trade off in terms of security. 
+
+Felter et al. \cite{felter} compare KVM and Docker performance with running applications in their native environment. In their benchmark, the Sysbench oltp benchmark is ran against a single instance of MySQL. The benchmark compared MySQL throughput in terms of transactions per second on Docker with an AUFS volume, Docker with normal networking using NAT, and Docker using host networking and a mounted volume, native Linux, and KVM. The results showed that MySQL transactions under KVM qcow were about 30\% compared to native. Docker volumes have noticeably better performance than files stored in AUFS. They also found that NAT introduces overheads for workloads with high packet rates. 
+
+Xavier et al. \cite{xavier} analyzed MapReduce clusters and in HPC Environments comparing and contrasting the current container-based systems including Linux VServer, OpenVZ and Linux Containers (LXC). They evaluated the performance of MapReduce jobs on a cluster running different container systems. The results showed that all container-based systems offered a near-native performance. They also found that LXC was closest to native performance. 
+
+\section{Methodology}
+List of software and hardware specs
+
+
+
+\begin{thebibliography}{99}
+	\bibitem{felter}
+	Felter, Wes, et al. "An updated performance comparison of virtual machines and linux containers." Performance Analysis of Systems and Software (ISPASS), 2015 IEEE International Symposium On. IEEE, 2015.
+	
+	\bibitem{morabit}
+	Morabito, Roberto, Jimmy Kjällman, and Miika Komu. "Hypervisors vs. lightweight virtualization: a performance comparison." Cloud Engineering (IC2E), 2015 IEEE International Conference on. IEEE, 2015.
+	
+	\bibitem{xavier}
+	Xavier, Miguel Gomes, Marcelo Veiga Neves, and Cesar Augusto Fonticielha De Rose. "A performance comparison of container-based virtualization systems for mapreduce clusters." 2014 22nd Euromicro International Conference on Parallel, Distributed, and Network-Based Processing. IEEE, 2014.
+	 
+\end{thebibliography}
+
+\end{document}
