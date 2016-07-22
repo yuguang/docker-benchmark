@@ -1,0 +1,30 @@
+abstract use environment
+introduction before background
+- motivate the problem
+- introduce problem
+- list contributions
+- outline remainder
+
+overview of docker
+-what is docker
+-how is it used
+-how it works
+-comparison to other vms
+
+related work
+(pertains only to the problem - performance evaluation of docker / performance evaluation in virtual machines)
+
+
+methodology
+list goals, metrics, factors, integrity tests (basic checks on data)
+  experimental setup
+	- describe datamill
+
+benchmark results
+
+discussion
+-what was learned
+-what was difficult or easy
+-threats to validity
+
+conclusions

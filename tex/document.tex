@@ -58,7 +58,7 @@
 	
 	%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-\section{Abstract}
+\begin{abstract}
 Virtualization of operating systems provides a common way to deploy complex
 applications to a cloud environment. A new form of virtualization based on containers
 promises to offer better performance than traditional approaches with a virtual machine.
@@ -66,14 +66,22 @@ This paper explores a method of running performance evaluation experiments using
 docker and compares container based virtualization with native performance. Several
 benchmark tools are used to measure overhead in terms of processing, storage,
 memory and network. [Summary of results]
+\end{abstract}
+
+\section{Introduction}
+
+\section{Overview of Docker}
+
+Docker is a platform that allows developers to "build, ship and run any app, anywhere". It is now the standard solution to software deployment, which is a costly and fault prone process.  
+
+One way to understand Docker is through a metaphor of shipping physical goods. Before containers for shipping goods were invented, special handling was applied to different types of goods. Moreover, goods were shipped from sea to air, road to sea, sea to railroad, railroad to sea, and more combinations. For each of those cases, goods were handled differently. As a result, shipping was an expensive and difficult problem. To solve the complex problem of shipping goods cheaply to all locations, shipping containers were invented. These standardized containers had specific dimensions and weight. Ships and trucks were designed to carry, load, and unload these predictably shaped items. Different types of goods are packaged inside a container, and it doesn’t matter to the carrier what types of goods are in the container. Docker does the same thing for software rather than physical goods. Docker packages software dependencies and libraries in a standard format so that they are deployable anywhere. 
+
+\subsection{How Docker Compares to VMs}
+Docker containers are quicker to spin up and deploy to machines. Since Docker uses a layered filesystem, only the changes to the filesystem rather than an entire operating system is shipped. As a result, Docker containers are lightweight to deploy and make changes to. In addition, Docker is entirely a command line utility, which makes it scriptable. Unlike starting and stopping a virtual machine through GUI management consoles, it is relatively easy to automate starting and stopping Docker containers. 
+
+Docker containers are lightweight and more scalable than virtual machines for running multiple instances on a single physical machine. In a scalability comparison done by Ann Mary Joy \cite{joy}, containers scaled up 22 times faster than virtual machines for a load balanced WordPress application. In this experiment, the AWS EC2 auto scaling feature is used. Auto scaling is triggered when the CPU utilization goes above 80\%. Jmeter is used to send concurrent requests to WordPress. Spinning up a new container to load balance the requests took only eight seconds compared to three minutes for a new virtual machine. 
 
 
-\section{Background}
-Container-based virtualization benefits
-
-Container-based virtualization drawbacks
-- security
-	
 \section{Related Works}
 Morabit et al. \cite{morabit} compared hypervisor and container performance with running applications in a native environment. They used the Y-cruncher, NBENCH, and Linpack to measure CPU performance under KVM, Docker, LXC, and OSV. For disk I/O performance, sequential reads and writes of 25 GB was tested with Bonnie++. The results show that disk I/O efficiency is still a bottleneck with KVM. LXC and Docker introduce negligible overhead, though there is a trade off in terms of security. 
 
@@ -84,9 +92,33 @@ Xavier et al. \cite{xavier} analyzed MapReduce clusters and in HPC Environments 
 \section{Methodology}
 List of software and hardware specs
 
+\section{Benchmark Results}
+This section presents the results of the analysis. The benchmarks measure CPU, Memory, Disk I/O, and Network I/O performance. 
 
+\subsection{CPU Performance}
+The Pi calculation 
+
+\subsection{Disk I/O Performance}
+
+\subsection{Memory Performance}
+
+\section{Discussion}
+
+\section{Conclusions and Future Work}
+
+\subsection{Integration with Datamill}
+Datamill workers have three standard partitions: boot, controller, and benchmark. The boot partition is for the kernel and initramfs, the controller partition holds a barebones Gentoo installation, and the controller partition is cloned to run benchmarks in the benchmark partition. As a result, the allocated disk space for the controller partition is minimal to give as much space to run experiments as possible on the benchmark partition. 
+
+Docker stores data such as images and containers in the user’s directory on disk. If the containerized experiments were run on the controller partition, the file system on the controller partition will inevitably run out of disk space. Therefore, the proposed way to run containerized experiments is by starting the Docker daemon with an argument to specify its directory. For example to run Docker from \texttt{/mnt/benchmark}, the command to start the Docker daemon is \texttt{docker -g /mnt/benchmark -d}. This will create a set of files and folders internal to Docker in \texttt{/mnt/benchmark}. After running an experiment files and folders in \texttt{/mnt/benchmark} are deleted, removing the containers and images. 
 
 \begin{thebibliography}{99}
+	\bibitem{sysbench}
+	Kopytov, Alexey. "SysBench: A System Performance Benchmark, 2004."
+	
+	
+	\bibitem{joy}
+	Joy, Ann Mary. "Performance comparison between linux containers and virtual machines." Computer Engineering and Applications (ICACEA), 2015 International Conference on Advances in. IEEE, 2015.
+	
 	\bibitem{felter}
 	Felter, Wes, et al. "An updated performance comparison of virtual machines and linux containers." Performance Analysis of Systems and Software (ISPASS), 2015 IEEE International Symposium On. IEEE, 2015.
 	
