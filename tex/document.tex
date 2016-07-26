@@ -69,18 +69,38 @@ memory and network. [Summary of results]
 \end{abstract}
 
 \section{Introduction}
+Container-based virtualization is a lightweight alternative to hypervisor-based virtualization \cite{morabito}. Docker, a form of container-based virtualization, uses Linux kernel primitives to implement isolation of processes, network interfaces, and file systems. Creating a new container only takes a few seconds, while spinning up a new virtual machine often takes many minutes. In addition, virtual machines run on virtualized hardware and virtual device drivers which presents performance challenges due to the added layers between the physical hardware and the application. 
 
 \section{Overview of Docker}
 
-Docker is a platform that allows developers to "build, ship and run any app, anywhere". It is now the standard solution to software deployment, which is a costly and fault prone process.  
+Docker is a platform that allows developers to "build, ship and run any app, anywhere". It is now the standard solution to software deployment, which is a costly and fault prone process. One way to understand Docker is through a metaphor of shipping physical goods \cite{miell}. Before containers for shipping goods were invented, special handling was applied to different types of goods. Moreover, goods were shipped from sea to air, road to sea, sea to railroad, railroad to sea, and more combinations. For each of those cases, goods were handled differently. As a result, shipping was an expensive and difficult problem. To solve the complex problem of shipping goods cheaply to all locations, shipping containers were invented. These standardized containers had specific dimensions and weight. Ships and trucks were designed to carry, load, and unload these predictably shaped items. Different types of goods are packaged inside a container, and it doesn’t matter to the carrier what types of goods are in the container. Docker does the same thing for software rather than physical goods. Docker packages software dependencies and libraries in a standard format so that they are deployable anywhere. 
 
-One way to understand Docker is through a metaphor of shipping physical goods. Before containers for shipping goods were invented, special handling was applied to different types of goods. Moreover, goods were shipped from sea to air, road to sea, sea to railroad, railroad to sea, and more combinations. For each of those cases, goods were handled differently. As a result, shipping was an expensive and difficult problem. To solve the complex problem of shipping goods cheaply to all locations, shipping containers were invented. These standardized containers had specific dimensions and weight. Ships and trucks were designed to carry, load, and unload these predictably shaped items. Different types of goods are packaged inside a container, and it doesn’t matter to the carrier what types of goods are in the container. Docker does the same thing for software rather than physical goods. Docker packages software dependencies and libraries in a standard format so that they are deployable anywhere. 
+\subsection{How Docker is Used}
+Due to the lightweight nature of Docker containers, there are many versatile uses for them. These include prototyping software, modelling networks, and implementing a microservices architecture. Docker allows developers to experiment with new software setups without the hassle of starting a virtual machine. Since Docker provides a sandboxed environment, existing software installed on a development machine is not affected. Docker is also a portable way to package a software environment. A Docker image comes without any dependencies and runs as long as Docker is installed. Furthermore, Docker facilitates the development of a microservices architecture. One way to create a microservices architecture with Docker is to break down components into separate containers which are then composed to build a software stack \cite{miell}. 
+
+Since a typical modern machine supports up to thousands of containers, Docker is a cheap and convenient way to model real world networks. Moreover, Docker simplifies debugging. Docker allows developers to document exactly where a bug occurs and the steps to reproduce it. An added advantage of using Docker both in development and production is that the same container that runs on a developer’s laptop runs on a server. This makes remote debugging much simpler \cite{miell}. 
+
+\subsection{Docker Architecture}
+Docker runs as multiple processes on a host machine. These processes include a client, a daemon, and a registry. The user interacts with the client to issue commands. The client sends HTTP requests to the Docker daemon, which runs as a service. The daemon in turn makes requests to other services to send and receive images. The daemon also manages the images and containers in addition to brokering interactions with registries. Docker Hub is an example of a public registry where users can share images with other users. In addition to public registries, many companies set up private registries for deploying and sharing images within the company. Docker registries are similar to source code repositories, and images can be pushed or pulled from these registries. 
+
+Docker is built on LXC and uses kernel level primitives such as copy-on-write filesystem, cgroups, and namespaces. Docker uses Linux namespaces to give groups of processes a different view of the system. Processes within a namespace cannot access resources outside of it. Docker uses this feature to provide an isolated workspace within a container \cite{rosen}. Docker uses several types of kernel namespaces, including:
+\begin{itemize}
+	\item \texttt{pid} - Docker uses \texttt{pid} namespaces to separate processes within a container from processes outside it. With namespaces, processes within a namespace cannot see or influence processes outside of the namespace in other containers. 
+	\item \texttt{net} – The network namespace provides containers with its own network device and virtual IP address \cite{anderson}. For example, if multiple instances of Apache were running inside a container on port 80, Apache would not be exposed outside the container unless ports were mapped. Docker by default performs a network address translation to map ports from inside the container to the host. 
+	\item \texttt{mnt} – Docker allows host filesystems to be mounted in a container. This allows processes within a container to share files with the host and to have a different view of the filesystem from the host. 
+\end{itemize}
+
+Docker uses control groups, often referred to as \texttt{cgroups}, to provide resource management and accounting. For instance, users can specify the amount of RAM or number of CPU cores for a container. \cite{anderson}. Docker provides granular control to physical resources, and users can add and drop capabilities. 
+
+Docker relies on copy-on-write union file systems to provide a copy of the file system within containers. Docker uses Linux union file systems, which work by layering on top of existing file systems. Btrfs, device mapper, and AuFS are all examples of union file systems that support copy-on-write operations. Docker containers are built on a file system layer with libraries and binaries that fake an operating system. That base file system layer is referred to as an image in Docker terminology. Changes to the file system are added as layers and can be rolled back \cite{anderson}. The user may commit these changes and push them to a registry as an image. 
+
 
 \subsection{How Docker Compares to VMs}
 Docker containers are quicker to spin up and deploy to machines. Since Docker uses a layered filesystem, only the changes to the filesystem rather than an entire operating system is shipped. As a result, Docker containers are lightweight to deploy and make changes to. In addition, Docker is entirely a command line utility, which makes it scriptable. Unlike starting and stopping a virtual machine through GUI management consoles, it is relatively easy to automate starting and stopping Docker containers. 
 
 Docker containers are lightweight and more scalable than virtual machines for running multiple instances on a single physical machine. In a scalability comparison done by Ann Mary Joy \cite{joy}, containers scaled up 22 times faster than virtual machines for a load balanced WordPress application. In this experiment, the AWS EC2 auto scaling feature is used. Auto scaling is triggered when the CPU utilization goes above 80\%. Jmeter is used to send concurrent requests to WordPress. Spinning up a new container to load balance the requests took only eight seconds compared to three minutes for a new virtual machine. 
 
+Raho et al. conducted a performance analysis comparing KVM, Xen, and Docker on ARM based devices \cite{raho}. They found a negligible performance overhead for Docker and Xen privileged domain. On the UnixBench tests, hypervisors performed better than Docker on pipe-based context switches. This performance gain was attributed to caching in hypervisors. Xen and KVM also performed better than Docker IOzone benchmarks, except for the write operation. For small packets tested with Netperf, Xen performed the best. Docker had the request/response performance. 
 
 \section{Related Works}
 Morabit et al. \cite{morabit} compared hypervisor and container performance with running applications in a native environment. They used the Y-cruncher, NBENCH, and Linpack to measure CPU performance under KVM, Docker, LXC, and OSV. For disk I/O performance, sequential reads and writes of 25 GB was tested with Bonnie++. The results show that disk I/O efficiency is still a bottleneck with KVM. LXC and Docker introduce negligible overhead, though there is a trade off in terms of security. 
@@ -112,9 +132,20 @@ Datamill workers have three standard partitions: boot, controller, and benchmark
 Docker stores data such as images and containers in the user’s directory on disk. If the containerized experiments were run on the controller partition, the file system on the controller partition will inevitably run out of disk space. Therefore, the proposed way to run containerized experiments is by starting the Docker daemon with an argument to specify its directory. For example to run Docker from \texttt{/mnt/benchmark}, the command to start the Docker daemon is \texttt{docker -g /mnt/benchmark -d}. This will create a set of files and folders internal to Docker in \texttt{/mnt/benchmark}. After running an experiment files and folders in \texttt{/mnt/benchmark} are deleted, removing the containers and images. 
 
 \begin{thebibliography}{99}
+	\bibitem{raho}
+	Raho, Moritz, et al. "KVM, Xen and Docker: A performance analysis for ARM based NFV and cloud computing." Information, Electronic and Electrical Engineering (AIEEE), 2015 IEEE 3rd Workshop on Advances in. IEEE, 2015.
+	
+	\bibitem{anderson}
+	Anderson, Charles. "Docker." IEEE Software 32.3 (2015).
+	
 	\bibitem{sysbench}
 	Kopytov, Alexey. "SysBench: A System Performance Benchmark, 2004."
 	
+	\bibitem{miell}
+	Miell, Ian, and AidanHobson Sayers. \textit{Docker in Practice}. Manning Publications, New York, USA, 2015. Print.
+	
+	\bibitem{merkel}
+	Merkel, Dirk. "Docker: lightweight linux containers for consistent development and deployment." Linux Journal 2014.239 (2014): 2.
 	
 	\bibitem{joy}
 	Joy, Ann Mary. "Performance comparison between linux containers and virtual machines." Computer Engineering and Applications (ICACEA), 2015 International Conference on Advances in. IEEE, 2015.
@@ -127,6 +158,9 @@ Docker stores data such as images and containers in the user’s directory on di
 	
 	\bibitem{xavier}
 	Xavier, Miguel Gomes, Marcelo Veiga Neves, and Cesar Augusto Fonticielha De Rose. "A performance comparison of container-based virtualization systems for mapreduce clusters." 2014 22nd Euromicro International Conference on Parallel, Distributed, and Network-Based Processing. IEEE, 2014.
+	
+	\bibitem{rosen}
+	Rosen, Rami. \textit{Linux Kernel Networking}. Implementation and Theory. Springer Science and Business Media New York, New York, USA, 2013
 	 
 \end{thebibliography}
 
