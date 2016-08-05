@@ -1,4 +1,4 @@
 #!/bin/sh
-results="results.tar.gz"
+results="results="$HOSTNAME-docker.tar.gz"
 tar czf $results /results/*log
 echo $results
