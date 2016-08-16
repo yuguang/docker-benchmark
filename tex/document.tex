@@ -69,7 +69,12 @@ memory and network. [Summary of results]
 \end{abstract}
 
 \section{Introduction}
-Container-based virtualization is a lightweight alternative to hypervisor-based virtualization \cite{morabito}. Docker, a form of container-based virtualization, uses Linux kernel primitives to implement isolation of processes, network interfaces, and file systems. Creating a new container only takes a few seconds, while spinning up a new virtual machine often takes many minutes. In addition, virtual machines run on virtualized hardware and virtual device drivers which presents performance challenges due to the added layers between the physical hardware and the application. 
+Container-based virtualization is a lightweight alternative to hypervisor-based virtualization \cite{morabito}. Docker, a form of container-based virtualization, uses Linux kernel primitives to implement isolation of processes, network interfaces, and file systems. Creating a new container takes less than a second compared to minutes for spinning up a new virtual machine. This is because virtual machines run on virtualized hardware and virtual device drivers which presents performance challenges due to the added layers between the physical hardware and the application. This paper explores Docker as an alternative to the reboot per job structure for running performance evaluation experiments in DataMill. 
+DataMill is an infrastructure for rigorous and repeatable performance evaluation \cite{augusto}. DataMill executes the experiments on real hardware and incorporates the results from existing research on how to design experiments and evaluate hidden factors. The infrastructure automatically varies a selection of hardware and software factors, and therefore reduces the effort required by the user to setup and configure the experiment while simultaneously increasing the robustness and applicability of the experiments results to a wide range of factor levels \cite{augusto}. In order to execute experiments on real hardware and give users a clean workspace for experiments, DataMill currently makes a copy of the root filesystem to run benchmarks. DataMill workers consist of three partitions: boot, benchmark, and controller. The boot partition holds the kernel and grub. The controller partition is responsible for communication with the master node. The benchmark partition is where experiments are run. To run benchmarks, DataMill workers reboots into the benchmark partition. After running benchmarks, workers reboot to the controller partition. 
+Docker is an alternative to the current dual boot structure while maintaining an isolated environment for each experiment. This paper explores the overhead of running benchmarks in Docker. The goal is to quantify the level of overhead introduced by Docker. The native performance is used as the reference for comparison. The main contributions of this paper are:
+\begin{itemize}
+	\item An up to date comparison of container and native computing environments using recent software and generic workloads that measure CPU, memory, and disk I/O performance
+\end{itemize}
 
 \section{Overview of Docker}
 
@@ -110,15 +115,25 @@ Felter et al. \cite{felter} compare KVM and Docker performance with running appl
 Xavier et al. \cite{xavier} analyzed MapReduce clusters and in HPC Environments comparing and contrasting the current container-based systems including Linux VServer, OpenVZ and Linux Containers (LXC). They evaluated the performance of MapReduce jobs on a cluster running different container systems. The results showed that all container-based systems offered a near-native performance. They also found that LXC was closest to native performance. 
 
 \section{Methodology}
-List of software and hardware specs
+The system parameters that affect the performance of an application running in Docker are the speed of the CPU, the speed of the memory, the speed of the hard drive, the Docker syscall overhead using Linux namespaces, and the Docker control group overhead. If the application communicates over a network, the speed of the network also affects performance. Since the syscall overhead and control group overhead are not factors that I can vary, I only consider the CPU speed, memory speed, and disk I/O throughput for my experiments. The workload parameter I considered that affect the performance are 
+\begin{itemize}
+\item Prime number size for the sysbench CPU benchmark
+\item Different operations when running STREAM to test memory performance
+\item Small and large files for the file system benchmark
+\item Random and sequential operations for the file system benchmark
+\item Different operations for the file system benchmark, read and write
+\end{itemize}
+I ran a number of benchmarking applications using Docker and used the native performance as the baseline. The benchmark tools measure CPU, memory, and disk I/O performance. 
 
 \section{Benchmark Results}
-This section presents the results of the analysis. The benchmarks measure CPU, Memory, Disk I/O, and Network I/O performance. 
+This section presents the results of the analysis. The benchmarks measure CPU, Memory, Disk I/O, and Network I/O performance \cite{bukh}. Each individual measurement is repeated 10 
+times and the diagrams show the average of the measurements. 
 
 \subsection{CPU Performance}
-The Pi calculation 
+The sysbench CPU benchmark measures the execution time for a benchmark that finds the prime numbers. The execution time is the end-to-end time from the start of the request to the end, which includes the overhead of shared memory access for the threads. The calculations are performed using 64-bit integers. Each thread executes the requests concurrently until the prime numbers up to a specified value are computed \cite{kopytov}. For this benchmark, I use two CPU workloads to represent high and low levels. For the lower CPU workload, I set the maximum prime number to 20000. For the higher CPU workload, I set the maximum prime number to 80000. These workloads were chosen so that overheads such as the initialization of the benchmark are negligible compared to the total execution time. 
 
 \subsection{Disk I/O Performance}
+STREAM is a synthetic benchmark program that measures memory bandwith using simple vector kernels. It runs multiple repetitions four different kernels: \textit{copy}, \textit{scale}, \textit{add}, and \textit{triad}. STREAM uses arrays that are at least four times larger than the sum of all the last level CPU caches in order to measure the main memory bandwith. On systems with a large number of CPU cores, for example 16 cores each with 8MB L2 caches, this rule translates to running vector operations on arrays requiring more than 1GB of memory. 
 
 \subsection{Memory Performance}
 
@@ -132,8 +147,22 @@ Datamill workers have three standard partitions: boot, controller, and benchmark
 Docker stores data such as images and containers in the user’s directory on disk. If the containerized experiments were run on the controller partition, the file system on the controller partition will inevitably run out of disk space. Therefore, the proposed way to run containerized experiments is by starting the Docker daemon with an argument to specify its directory. For example to run Docker from \texttt{/mnt/benchmark}, the command to start the Docker daemon is \texttt{docker -g /mnt/benchmark -d}. This will create a set of files and folders internal to Docker in \texttt{/mnt/benchmark}. After running an experiment files and folders in \texttt{/mnt/benchmark} are deleted, removing the containers and images. 
 
 \begin{thebibliography}{99}
+	\bibitem{mccalpin}
+	McCalpin, John D.: "STREAM: Sustainable Memory Bandwidth in
+	High Performance Computers", a continually updated technical report
+	(1991-2007), available at: "http://www.cs.virginia.edu/stream/"
+	
+	\bibitem{kopytov}
+	Kopytov, Alexey. "SysBench manual." MySQL AB (2012).
+	
 	\bibitem{raho}
 	Raho, Moritz, et al. "KVM, Xen and Docker: A performance analysis for ARM based NFV and cloud computing." Information, Electronic and Electrical Engineering (AIEEE), 2015 IEEE 3rd Workshop on Advances in. IEEE, 2015.
+	
+	\bibitem{bukh}
+	Bukh, Per Nikolaj D., and Raj Jain. "The art of computer systems performance analysis, techniques for experimental design, measurement, simulation and modeling." (1992): 113-115.
+	
+	\bibitem{augusto}
+	de Oliveira, Augusto Born, et al. "Datamill: Rigorous performance evaluation made easy." Proceedings of the 4th ACM/SPEC International Conference on Performance Engineering. ACM, 2013.
 	
 	\bibitem{anderson}
 	Anderson, Charles. "Docker." IEEE Software 32.3 (2015).
