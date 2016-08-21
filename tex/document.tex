@@ -171,9 +171,10 @@ int cpu_execute_request(sb_request_t *r, int thread_id)
 The sysbench CPU benchmark source code is shown in listing \ref{lst:sysbenchcpu}. The event start time is logged before starting the prime calculation and the event end time is logged after the calculation. The \textit{cpu\_execute\_request} function is called 10000 times to calculate the average time it takes to compute the prime numbers. 
 
 \subsection{Disk I/O Performance}
-STREAM is a synthetic benchmark program that measures memory bandwith using simple vector kernels. It runs multiple repetitions four different kernels: \textit{copy}, \textit{scale}, \textit{add}, and \textit{triad}. STREAM uses arrays that are at least four times larger than the sum of all the last level CPU caches in order to measure the main memory bandwith. On systems with a large number of CPU cores, for example 16 cores each with 8MB L2 caches, this rule translates to running vector operations on arrays requiring more than 1GB of memory. 
+
 
 \subsection{Memory Performance}
+STREAM is a synthetic benchmark program that measures memory bandwith using simple vector kernels. It runs multiple repetitions four different kernels: \textit{copy}, \textit{scale}, \textit{add}, and \textit{triad}. STREAM uses arrays that are at least four times larger than the sum of all the last level CPU caches in order to measure the main memory bandwith. On systems with a large number of CPU cores, for example 16 cores each with 8MB L2 caches, this rule translates to running vector operations on arrays requiring more than 1GB of memory. 
 
 \section{Discussion}
 
