@@ -170,6 +170,8 @@ int cpu_execute_request(sb_request_t *r, int thread_id)
 
 The sysbench CPU benchmark source code is shown in listing \ref{lst:sysbenchcpu}. The event start time is logged before starting the prime calculation and the event end time is logged after the calculation. The \textit{cpu\_execute\_request} function is called 10000 times to calculate the average time it takes to compute the prime numbers. 
 
+Fig. \ref{fig:cpu} shows the execution time of the sysbench CPU benchmark where lower is better. The performance effect of running the benchmark in Docker is negligible, at about 0.1\%. It is interesting to note that for large prime numbers, there is a performance increase when running in Docker. For small prime numbers, there is a performance decrease running inside Docker.
+
 \subsection{Disk I/O Performance}
 
 
