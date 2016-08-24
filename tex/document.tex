@@ -125,6 +125,16 @@ The system parameters that affect the performance of an application running in D
 \end{itemize}
 I ran a number of benchmarking applications using Docker and used the native performance as the baseline. The benchmark tools measure CPU, memory, and disk I/O performance. 
 
+\subsection{Software Environment}
+The host operating system used was Ubuntu 16.04 LTS with kernel 4.4.0-34-generic. 
+The Docker image was based on the official Ubuntu 16.04 release image on Docker hub. 
+Both the Docker image and the native Ubuntu were configured default provided configuration files. 
+
+
+\section{Results}
+This section presents the results of the analysis. The benchmarks measure CPU, Memory, Disk I/O, and Network I/O performance \cite{bukh}. Each individual measurement is repeated 5 
+times and the diagrams show the average of the measurements. 
+
 \subsection{CPU Performance}
 The sysbench CPU benchmark measures the execution time for a benchmark that finds the prime numbers. The execution time is the end-to-end time from the start of the request to the end, which includes the overhead of shared memory access for the threads. The calculations are performed using 64-bit integers. Each thread executes the requests concurrently until the prime numbers up to a specified value are computed \cite{kopytov}. For this benchmark, I use two CPU workloads to represent high and low levels. For the lower CPU workload, I set the maximum prime number to 20000. For the higher CPU workload, I set the maximum prime number to 80000. 
 
@@ -164,7 +174,7 @@ int cpu_execute_request(sb_request_t *r, int thread_id)
 }
 \end{lstlisting}
 
-The sysbench CPU benchmark source code is shown in listing \ref{lst:sysbenchcpu}. The event start time is logged before starting the prime calculation and the event end time is logged after the calculation. The \textit{cpu\_execute\_request} function is called 10000 times to calculate the average time it takes to compute the prime numbers. 
+The sysbench CPU benchmark source code is shown in Listing \ref{lst:sysbenchcpu}. The event start time is logged before starting the prime calculation and the event end time is logged after the calculation. The \textit{cpu\_execute\_request} function is called 10000 times to calculate the average time it takes to compute the prime numbers. 
 
 Fig. \ref{fig:cpu} shows the execution time of the sysbench CPU benchmark where lower is better. The performance effect of running the benchmark in Docker is negligible, at about 0.1\%. It is interesting to note that for large prime numbers, there is a performance increase when running in Docker. For small prime numbers, there is a performance decrease running inside Docker.
 
@@ -177,7 +187,7 @@ The sysbench also has a set of file I/O benchmarks that characterize disk perfor
 	\item random read
 	\item random write
 	\item combined random read/write
-For the workloads, I have configured sysbench to create a set of files with the total size of files to 5GB. In order to clear the file system caches between each run, I unmount and format the file system. An example script for formatting a partition and mounting it in Docker to execute the random read benchmark is shown in listing \ref{lst:sysbenchio}. The accompanying Dockerfile in listing \ref{lst:dockerfile} takes the \texttt{sysbench-single.sh} script in the current directory and adds it to the working directory in the Docker image. Similarly, for measuring native I/O performance I unmount and remount a separate partition to clear the file system cache. 
+For the workloads, I have configured sysbench to create a set of files with the total size of files to 5GB. In order to clear the file system caches between each run, I unmount and format the file system. An example script for formatting a partition and mounting it in Docker to execute the random read benchmark is shown in Listing \ref{lst:sysbenchio}. The accompanying Dockerfile in Listing\ref{lst:dockerfile} takes the \texttt{sysbench-single.sh} script in the current directory and adds it to the working directory in the Docker image. Similarly, for measuring native I/O performance I unmount and remount a separate partition to clear the file system cache. 
 
 \lstset{caption=Sysbench File I/O Random Read Bash Script, label=lst:sysbenchio}
 \begin{lstlisting}
@@ -208,11 +218,24 @@ RUN chmod +x *.sh
 In order to format the file system and unmount it, I ran these benchmarks on a removable USB drive. The USB has a total capacity of 16GB and a USB 3.0 interface with the test computer. 
 
 \subsection{Memory Performance}
-STREAM is a synthetic benchmark program that measures memory bandwith using simple vector kernels. It runs multiple repetitions four different kernels: \textit{copy}, \textit{scale}, \textit{add}, and \textit{triad}. STREAM uses arrays that are at least four times larger than the sum of all the last level CPU caches in order to measure the main memory bandwith. The computed result is checked as an integrity test after each run. 
+STREAM is a synthetic benchmark program that measures memory bandwith using simple vector kernels \cite{mccalpin}. It runs multiple repetitions four different kernels: \textit{copy}, \textit{scale}, \textit{add}, and \textit{triad}. STREAM uses arrays that are at least four times larger than the sum of all the last level CPU caches in order to measure the main memory bandwith. The computed result is validated as an integrity test on the arrays. 
+
+
+I ran the
+STREAM benchmark with an array size of 10 million elements, or
+a total memory requirement of 0.2 gigabytes. The particular CPU
+where I ran the benchmarks had 4 physical cores, each with a L2 cache size of 256 kilobytes. 
+Therefore, the CPU has a total L2 cache size of 1MB, which this test exceeded by
+two orders of magnitude.
+
+The results from running STREAM 5 times are plotted in Fig. \ref{fig:mem} where throughput is in megabytes per second. 
+The test consisted of multiple repetitions of four the kernels. The best results of the 10 trials are chosen to calculate the throughput \cite{mccalpin}. 
+For all of the operations, the difference in throughput between running in a Docker container and natively is less than 5\%. For some operations, the best rates out of 10 were better higher in Docker than on native. This may be the result of better process isolation in a Docker container. 
 
 \section{Discussion}
-This section presents the results of the analysis. The benchmarks measure CPU, Memory, Disk I/O, and Network I/O performance \cite{bukh}. Each individual measurement is repeated 5 
-times and the diagrams show the average of the measurements. 
+
+\section{Lessons Learned}
+
 
 \section{Conclusions and Future Work}
 
