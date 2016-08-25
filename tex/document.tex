@@ -192,7 +192,7 @@ For the workloads, I have configured sysbench to create a set of files with the 
 \lstset{caption=Sysbench File I/O Random Read Bash Script, label=lst:sysbenchio}
 \begin{lstlisting}
 sudo mkfs.btrfs -f /dev/sdb1
-sudo mount /dev/sda1 /mnt/benchmark/
+sudo mount /dev/sdb1 /mnt/benchmark/
 cat > sysbench-single.sh <<EOF
 #!/bin/sh
 cd /benchmark
@@ -215,7 +215,6 @@ WORKDIR /scripts
 RUN chmod +x *.sh
 \end{lstlisting}
 
-In order to format the file system and unmount it, I ran these benchmarks on a removable USB drive. The USB has a total capacity of 16GB and a USB 3.0 interface with the test computer. 
 
 \subsection{Memory Performance}
 STREAM is a synthetic benchmark program that measures memory bandwith using simple vector kernels \cite{mccalpin}. It runs multiple repetitions four different kernels: \textit{copy}, \textit{scale}, \textit{add}, and \textit{triad}. STREAM uses arrays that are at least four times larger than the sum of all the last level CPU caches in order to measure the main memory bandwith. The computed result is validated as an integrity test on the arrays. 
@@ -234,8 +233,12 @@ For all of the operations, the difference in throughput between running in a Doc
 
 \section{Discussion}
 
-\section{Lessons Learned}
+\subsection{Lessons Learned}
+In order to compare the performance of benchmarks running in Docker to their native performance, care must be taken for the experiment setup. For my initial experiment setup, I ran my benchmarks on the Datamill infrastructure with Gentoo workers. Due to the lack of a Gentoo container, I built a Docker image for running the benchmarks with the necessary dependencies from Ubuntu. The result was the memory and CPU intensive benchmarks performed better in the Docker container than on the native host. This was due to a mismatch of GCC versions in the Docker container and the Gentoo host. Gentoo used an older version of GCC. GCC on the Gentoo host were at version 4.9.3, compared to version 5.4.0 in the Docker container based on Ubuntu. As a result, the memory and CPU intensive benchmarks in the Docker container were more optimized than those ran on the Gentoo host. 
 
+After switching to Ubuntu 16.04 for both the native baseline and the Docker container, the memory and  CPU intensive benchmarks had the same level of performance natively and in the container. However, the disk I/O benchmarks showed a performance gap with this round of experiments. After investigation, I found that the mount options were different for the partitions in the Docker container and native baseline. I ran the native benchmarks in \texttt{/home}, while Docker stored container images in \texttt{/var}. \texttt{/home} was on a separate partition and had different mount options from the partition for \texttt{var}. 
+
+Another area of interesting performance variation between native and Docker container performance is with USB mounted partitions. With USB partitions, I found that the random write performance was much worse in Docker than on native. Random write throughput on native was 6 times the throughput in a Docker container. Also, the sequential write throughput on native was more than 10 times the throughput in a Docker container. Clearly, the kernel mount namespace or cgroups impose additional restrictions for USB partitions compared to hard drive partitions. These experiments were done on a removable USB drive where the file system was formatted and unmounted between test runs. The USB had a total capacity of 16GB and a USB 3.0 interface. 
 
 \section{Conclusions and Future Work}
 
