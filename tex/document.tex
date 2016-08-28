@@ -65,7 +65,7 @@ promises to offer better performance than traditional approaches with a virtual 
 This paper explores a method of running performance evaluation experiments using
 docker and compares container based virtualization with native performance. Several
 benchmark tools are used to measure overhead in terms of processing, storage,
-memory and network. [Summary of results]
+and memory. [Summary of results]
 \end{abstract}
 
 \section{Introduction}
@@ -74,6 +74,8 @@ DataMill is an infrastructure for rigorous and repeatable performance evaluation
 Docker is an alternative to the current dual boot structure while maintaining an isolated environment for each experiment. This paper explores the overhead of running benchmarks in Docker. The goal is to quantify the level of overhead introduced by Docker. The native performance is used as the reference for comparison. The main contributions of this paper are:
 \begin{itemize}
 	\item An up to date comparison of container and native computing environments using recent software and generic workloads that measure CPU, memory, and disk I/O performance
+	\item A reliable way to execute benchmarks in a Docker container and compare the performance with the native performance as a baseline
+	\item A method for integrating Docker into the Datamill infrastructure for replicable performance evaluation experiments
 \end{itemize}
 
 \section{Overview of Docker}
@@ -128,8 +130,7 @@ I ran a number of benchmarking applications using Docker and used the native per
 \subsection{Software Environment}
 The host operating system used was Ubuntu 16.04 LTS with kernel 4.4.0-34-generic. 
 The Docker image was based on the official Ubuntu 16.04 release image on Docker hub. 
-Both the Docker image and the native Ubuntu were configured default provided configuration files. 
-
+Both the Docker image and the native Ubuntu were configured default provided configuration files. Docker 1.12.0 was installed on the host OS running Ubuntu. 
 
 \section{Results}
 This section presents the results of the analysis. The benchmarks measure CPU, Memory, Disk I/O, and Network I/O performance \cite{bukh}. Each individual measurement is repeated 5 
@@ -214,7 +215,7 @@ ADD . /scripts
 WORKDIR /scripts
 RUN chmod +x *.sh
 \end{lstlisting}
-
+The experiments were performed on a SSD. The results are summarized in Fig. \ref{fig:disk} and show that read performance is slightly better in a Docker container than on the native host. The random read performance is about 4\% better in Docker and the sequential read performance is about 2.7\% better. Other research literature have also reported observed behavior being better in Docker. Morabito et al. found that Docker performed better for a few runs using \texttt{dd} as a simple command-line benchmarking tool. Moreover, some of the literature \cite{estrada} mentions similar unusual results where LXC is performing better than on the native OS. The performance difference between Docker and native are negligible for random and sequential writes, with less than 1\% difference. Similarly, there is little difference for random writes. 
 
 \subsection{Memory Performance}
 STREAM is a synthetic benchmark program that measures memory bandwith using simple vector kernels \cite{mccalpin}. It runs multiple repetitions four different kernels: \textit{copy}, \textit{scale}, \textit{add}, and \textit{triad}. STREAM uses arrays that are at least four times larger than the sum of all the last level CPU caches in order to measure the main memory bandwith. The computed result is validated as an integrity test on the arrays. 
@@ -232,9 +233,11 @@ The test consisted of multiple repetitions of four the kernels. The best results
 For all of the operations, the difference in throughput between running in a Docker container and natively is less than 5\%. For some operations, the best rates out of 10 were better higher in Docker than on native. This may be the result of better process isolation in a Docker container. 
 
 \section{Discussion}
+Execution time, memory throughput, and disk I/O throughput vary widely depending on the setup of the experiment. If care is taken to the setup, execution time, memory throughput, and disk I/O performance in a Docker container is similar to native performance.  
+
 
 \subsection{Lessons Learned}
-In order to compare the performance of benchmarks running in Docker to their native performance, care must be taken for the experiment setup. For my initial experiment setup, I ran my benchmarks on the Datamill infrastructure with Gentoo workers. Due to the lack of a Gentoo container, I built a Docker image for running the benchmarks with the necessary dependencies from Ubuntu. The result was the memory and CPU intensive benchmarks performed better in the Docker container than on the native host. This was due to a mismatch of GCC versions in the Docker container and the Gentoo host. Gentoo used an older version of GCC. GCC on the Gentoo host were at version 4.9.3, compared to version 5.4.0 in the Docker container based on Ubuntu. As a result, the memory and CPU intensive benchmarks in the Docker container were more optimized than those ran on the Gentoo host. 
+In order to compare the performance of benchmarks running in Docker to their native performance, care must be taken for the experiment setup. For my initial experiment setup, I ran my benchmarks on the Datamill infrastructure with Gentoo workers. Datamill is an infrastructure for automating performance evaluation that runs packages across a group of distributed workers. Due to the lack of a Gentoo container, I built a Docker image for running the benchmarks with the necessary dependencies from Ubuntu. The result was the memory and CPU intensive benchmarks performed better in the Docker container than on the native host. This was due to a mismatch of GCC versions in the Docker container and the Gentoo host. Gentoo used an older version of GCC. GCC on the Gentoo host were at version 4.9.3, compared to version 5.4.0 in the Docker container based on Ubuntu. As a result, the memory and CPU intensive benchmarks in the Docker container were more optimized than those ran on the Gentoo host. 
 
 After switching to Ubuntu 16.04 for both the native baseline and the Docker container, the memory and  CPU intensive benchmarks had the same level of performance natively and in the container. However, the disk I/O benchmarks showed a performance gap with this round of experiments. After investigation, I found that the mount options were different for the partitions in the Docker container and native baseline. I ran the native benchmarks in \texttt{/home}, while Docker stored container images in \texttt{/var}. \texttt{/home} was on a separate partition and had different mount options from the partition for \texttt{var}. 
 
@@ -242,12 +245,28 @@ Another area of interesting performance variation between native and Docker cont
 
 \section{Conclusions and Future Work}
 
+Container based technologies are an interesting alternative to traditional virtual machines. Docker is a popular container technology that runs on Linux using kernel cgroups and namespaces. It is a lightweight alternative to hypervisor based technologies such as KVM. Docker facilitates the deployment of services, allowing more software to be deployed on a physical machine compared to traditional virtual machines. In this paper, the performance evaluation of Docker shows that benchmarks run on Docker has the same level of performance as on a native machine. 
+
+The results show that the performance of Docker containers is on par with native performance. In the sysbench CPU benchmarks, the results on Docker and native differed less by 1\%. In the STREAM memory benchmarks, performance was at the same level again within 5\% difference. However, Docker performed slightly better in a few of the best of 5 runs measured by STREAM. This may be due to better process isolation in Docker. This phenomenon was also reported for containers in some of the research literature \cite{estrada}. In the disk I/O benchmarks, sequential and random writes in Docker performed at the same level with native. Sequential and random reads were slightly faster in Docker. 
+
+One of the goals of this research paper was to Docker suitable for replicable performance evaluation experiments. In other words, the goal is to determine whether packaging benchmarks in a Docker container facilitate reproducing the same procedures, measuring systems, and operating conditions to obtain the measurements reported. There are two aspects to this. First, whether Docker aids in experimental setup portability. Second, whether Docker introduces a small enough overhead that measurements are similar to those made on a native machine. 
+
+Through experimenting with various setups, I have found that to reproduce native measurements, the GCC and libc versions must match those on the native machine. In addition, mounting a host volume in the Docker container yields the closest performance compared to native. However, care must still be taken to the filesystem and mount options to reproduce the same measurements. 
+
+In terms of experimental setup portability, Docker is an ideal solution. As long as the Docker daemon is installed on a host machine, it can run the software in the Docker container. This means that a Ubuntu OS in a container runs on a RedHat or CentOS machine with Docker installed. In addition, Docker packages software in a concise format, saving changes to a layered file system. This makes the artifacts used in experimental computer science portable and easily distributable. 
+
 \subsection{Integration with Datamill}
+
+Datamill is an infrastructure for automating performance evaluation that runs packages across a group of distributed workers. DataMill facilitates producing robust, reliable, and reproducible results by incorportating the latest research results on hidden factors and automating the variation of these factors \cite{augusto}. This section explores the possibility of integrating Docker into the Datamill infrastructure for replicable performance evaluation experiments. 
+
 Datamill workers have three standard partitions: boot, controller, and benchmark. The boot partition is for the kernel and initramfs, the controller partition holds a barebones Gentoo installation, and the controller partition is cloned to run benchmarks in the benchmark partition. As a result, the allocated disk space for the controller partition is minimal to give as much space to run experiments as possible on the benchmark partition. 
 
 Docker stores data such as images and containers in the user’s directory on disk. If the containerized experiments were run on the controller partition, the file system on the controller partition will inevitably run out of disk space. Therefore, the proposed way to run containerized experiments is by starting the Docker daemon with an argument to specify its directory. For example to run Docker from \texttt{/mnt/benchmark}, the command to start the Docker daemon is \texttt{docker -g /mnt/benchmark -d}. This will create a set of files and folders internal to Docker in \texttt{/mnt/benchmark}. After running an experiment files and folders in \texttt{/mnt/benchmark} are deleted, removing the containers and images. 
 
 \begin{thebibliography}{99}
+	\bibitem{estrada}
+	Estrada, Zachary J., et al. "A performance evaluation of sequence alignment software in virtualized environments." Cluster, Cloud and Grid Computing (CCGrid), 2014 14th IEEE/ACM International Symposium on. IEEE, 2014.
+	
 	\bibitem{mccalpin}
 	McCalpin, John D.: "STREAM: Sustainable Memory Bandwidth in
 	High Performance Computers", a continually updated technical report
