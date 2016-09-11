@@ -135,7 +135,12 @@ The Docker image was based on the official Ubuntu 16.04 release image on Docker 
 Both the Docker image and the native Ubuntu were configured default provided configuration files. Docker 1.12.0 was installed on the host OS running Ubuntu. 
 
 \subsection{Hardware Environment}
-
+We used a Dell Precision 15 7000 for our empirical experimentation, which had the following hardware:
+\begin{itemize}
+	\item Intel Core i7-6820HQ
+	\item 16GB 2133MHz DDR4 non-ECC SDRAM
+	\item 256GB M.2 PCIe NVMe High Performance Class 50 Solid State Drive
+\end{itemize}
 
 \section{Results}
 This section presents the results of the analysis. The benchmarks measure CPU, memory, disk I/O, and network I/O performance. Each individual measurement is repeated five 
@@ -193,7 +198,7 @@ The sysbench CPU benchmark source code is shown in Listing \ref{lst:sysbenchcpu}
 	\label{fig:cpu}
 \end{figure}
 
-Fig. \ref{fig:cpu} shows the execution time of the sysbench CPU benchmark where lower is better. The performance effect of running the benchmark in Docker is negligible, at about 0.1\%. It is interesting to note that for large prime numbers, there is a performance increase when running in Docker. For small prime numbers, there is a performance decrease running inside Docker.
+Fig. \ref{fig:cpu} shows the execution time of the sysbench CPU benchmark where lower is better. The performance effect of running the benchmark in Docker is negligible, at about 0.1\%. For the benchmark with large prime numbers, the t-test statistic is -0.33021 and the p-value is 0.74972. For the benchmark with small prime numbers, the t-test statistic is 0.24674 and the p-value is 0.81491. Therefore, there is no significant difference in running the sysbench CPU benchmark inside a Docker container and natively.  
 
 \subsection{Disk I/O Performance}
 The sysbench also has a set of file I/O benchmarks that characterize disk performance. There are three stages for a sysbench I/O benchmark. In the \texttt{prepare} stage, sysbench creates the files. The \texttt{run} stage is where the I/O operations for the benchmark are performed. Finally, there is a \texttt{cleanup} stage where files created for the benchmark are deleted. Sysbench supports many I/O operations, including:
@@ -254,7 +259,7 @@ RUN chmod +x *.sh
 	\label{fig:disk2}
 \end{figure}
 
-The experiments were performed on an SSD. The results are summarized in Fig. \ref{fig:disk1} and Fig. \ref{fig:disk2}. The results show that read performance is slightly better in a Docker container than on the native host. The random read performance is about 4\% better in Docker and the sequential read performance is about 2.7\% better. Other research literature has also reported observed behavior being better in Docker. Morabito et al. found that Docker performed better for a few runs using \texttt{dd} as a simple command-line benchmarking tool. Moreover, some of the literature \cite{estrada} mentions similar unusual results where LXC is performing better than on the native OS. The performance difference between Docker and native are negligible for random and sequential writes, with less than 1\% difference. Similarly, there is little difference for random writes. 
+The experiments were performed on an SSD. The results are summarized in Fig. \ref{fig:disk1} and Fig. \ref{fig:disk2}. The results show that read performance is slightly better in a Docker container than on the native host. The random read performance is about 4\% better in Docker and the sequential read performance is about 2.7\% better. Other research literature has also reported observed behavior being better in Docker. Although statistically insignificant, Morabito et al. found that Docker performed better for a few runs using \texttt{dd} as a simple command-line benchmarking tool \cite{morabito}. Docker also showed higher variation in test runs compared to native and LXC. For the random write benchmark, the p-value is 0.01720, which is greater than 0.05. Similarly, for the sequential write benchmark, the p-value is 0.74263. Therefore, the performance difference between Docker and native is negligible for random and sequential writes. For reads, the p-values are 0.28154 and 0.75729, respectively for random and sequential. This shows that the difference in read performance is also negligible.  
 
 \subsection{Memory Performance}
 STREAM is a synthetic benchmark program that measures memory bandwith using simple vector kernels \cite{mccalpin}. It runs multiple repetitions of four different kernels: \textit{copy}, \textit{scale}, \textit{add}, and \textit{triad}. STREAM uses arrays that are at least four times larger than the sum of all the last level CPU caches in order to measure the main memory bandwith. The computed result is validated as an integrity test on the arrays. 
@@ -280,7 +285,7 @@ The test consisted of multiple repetitions of four the kernels. The best results
 For all of the operations, the difference in throughput between running in a Docker container and natively is less than 3\%. For some operations, the best rates out of 10 were better higher in Docker than on native. This may be the result of better process isolation in a Docker container. 
 
 \section{Discussion}
-Execution time, memory throughput, and disk I/O throughput vary widely depending on the setup of the experiment. Nevertheless, if care is taken to the setup, execution time, memory throughput, and disk I/O performance in a Docker container are similar to native performance. In the sysbench CPU benchmarks, the results on Docker and native differed by less than 1\%. In the STREAM memory benchmarks, again the performance was the same with less than 3\% difference. Docker containers performed at about the same level in the sysbench disk I/O benchmarks. Although the disk I/O benchmarks showed the greatest variation in the measurements, the performance difference was within 5\%. 
+Execution time, memory throughput, and disk I/O throughput vary widely depending on the setup of the experiment. Nevertheless, if care is taken to the setup, execution time, memory throughput, and disk I/O performance in a Docker container are similar to native performance. In the sysbench CPU benchmarks, the results on Docker and native differed by less than 1\%. In the STREAM memory benchmarks, again the performance was the same with less than 3\% difference. Docker containers performed at about the same level in the sysbench disk I/O benchmarks. Although the disk I/O benchmarks showed the greatest variation in the measurements, the performance difference was within 5\%. These differences in the execution time, memory throughput, and disk I/O throughput were not statistically significant. 
 
 
 \subsection{Lessons Learned}
@@ -294,7 +299,7 @@ Another area of interesting performance variation between native and Docker cont
 
 Container based technologies are an interesting alternative to traditional virtual machines. Docker is a popular container technology that runs on Linux using kernel cgroups and namespaces. It is a lightweight alternative to hypervisor based technologies such as KVM. Docker facilitates the deployment of services, allowing more software to be deployed on a physical machine compared to traditional virtual machines. In this paper, the performance evaluation of Docker shows that benchmarks run on Docker have the same level of performance as on a native machine. 
 
-The results show that the performance of Docker containers is on par with native performance. In the sysbench CPU benchmarks, the results on Docker and native were about the same. In the STREAM memory benchmarks, performance was at the same level again within 3\% difference. However, Docker performed slightly better in a few of the best of 5 runs measured by STREAM. This may be due to better process isolation in Docker. This phenomenon was also reported for containers in some of the research literature \cite{estrada}. In the disk I/O benchmarks, sequential and random writes in Docker performed at the same level with native. Sequential and random reads were slightly faster in Docker. 
+The results show that the performance of Docker containers is on par with native performance. In the sysbench CPU benchmarks, the results on Docker and native were about the same. In the STREAM memory benchmarks, performance was at the same level again with no significant difference. In the disk I/O benchmarks, read and write operations in Docker performed at the same level as native. 
 
 One of the goals of this research paper was to Docker suitable for replicable performance evaluation experiments. In other words, the goal is to determine whether packaging benchmarks in a Docker container facilitate reproducing the same procedures, measuring systems, and operating conditions to obtain the measurements reported. There are two aspects to this. First, whether Docker aids in experimental setup portability. Second, whether Docker introduces a small enough overhead that measurements are similar to those made on a native machine. 
 
