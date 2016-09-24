@@ -65,7 +65,7 @@
 		This paper explores a method of running performance evaluation experiments using
 		Docker and compares container based virtualization with native performance. Several
 		benchmark tools are used to measure overhead in terms of processing, disk I/O,
-		and memory performance. The results show that the performance of Docker containers is on par with native performance. In the sysbench CPU benchmarks, the results on Docker and native differ by less than 1\%. In the memory and disk performance benchmarks, the memory and disk throughput in Docker are within 5\% of native performance.
+		and memory performance. The results show that the performance of Docker containers is on par with native performance. In the Sysbench CPU benchmarks, the results on Docker and native differ by less than 1\%. In the memory and disk performance benchmarks, the memory and disk throughput in Docker are within 5\% of native performance.
 	\end{abstract}
 	
 	\section{Introduction}
@@ -121,7 +121,7 @@
 	\section{Methodology}
 	The system parameters that affect the performance of an application running in Docker are the speed of the CPU, the speed of the memory, the speed of the hard drive, the Docker syscall overhead using Linux namespaces, and the Docker control group overhead. If the application communicates over a network, the speed of the network also affects performance. Since the syscall overhead and control group overhead are not factors that we can vary, we only consider the CPU speed, memory speed, and disk I/O throughput for our experiments \cite{bukh}. The workload parameters we considered that affect the performance are
 	\begin{itemize}
-		\item Prime number to calculate up to for the sysbench CPU benchmark
+		\item Prime number to calculate up to for the Sysbench CPU benchmark
 		\item Different operations when running STREAM to test memory performance. These are vector ADD, TRIAD, SCALE, and COPY
 		\item Small and large files for the file system benchmark
 		\item Random and sequential operations for the file system benchmark
@@ -148,9 +148,9 @@
 	Standard Error. 
 	
 	\subsection{CPU Performance}
-	The sysbench CPU benchmark measures the execution time for a benchmark that finds prime numbers. The execution time is the end-to-end time from the start of the request to the end, which includes the overhead of shared memory access for the threads. The calculations are performed using 64-bit integers. Each thread executes the requests concurrently until the prime numbers up to a specified value are computed \cite{kopytov}. For this benchmark, we use two CPU workloads to represent high and low levels. For the lower CPU workload, we set the maximum prime number to 20000. For the higher CPU workload, we set the maximum prime number to 80000. 
+	The Sysbench CPU benchmark measures the execution time for a benchmark that finds prime numbers. The execution time is the end-to-end time from the start of the request to the end, which includes the overhead of shared memory access for the threads. The calculations are performed using 64-bit integers. Each thread executes the requests concurrently until the prime numbers up to a specified value are computed \cite{kopytov}. For this benchmark, we use two CPU workloads to represent high and low levels. For the lower CPU workload, we set the maximum prime number to 20000. For the higher CPU workload, we set the maximum prime number to 80000. 
 	
-	\lstset{caption=Sysbench CPU Benchmark Source Code, label=lst:sysbenchcpu}
+	\lstset{caption=Sysbench CPU Benchmark Source Code, label=lst:Sysbenchcpu}
 	\begin{lstlisting}[
 	basicstyle=\small
 	]
@@ -189,20 +189,20 @@
 	}
 	\end{lstlisting}
 	
-	The sysbench CPU benchmark source code is shown in Listing \ref{lst:sysbenchcpu}. The event start time is logged before starting the prime calculation and the event end time is logged after the calculation. The \textit{cpu\_execute\_request} function is called 10000 times to calculate the average time it takes to compute the prime numbers. 
+	The Sysbench CPU benchmark source code is shown in Listing \ref{lst:Sysbenchcpu}. The event start time is logged before starting the prime calculation and the event end time is logged after the calculation. The \textit{cpu\_execute\_request} function is called 10000 times to calculate the average time it takes to compute the prime numbers. 
 	
 	
 	\begin{figure}
 		\centering
 		{\includegraphics[width=150mm]{cpu.png}}
-		\caption{ The value of sysbench CPU benchmark results on over 10 runs}
+		\caption{ The value of Sysbench CPU benchmark results on over 10 runs}
 		\label{fig:cpu}
 	\end{figure}
 	
-	Fig. \ref{fig:cpu} shows the execution time of the sysbench CPU benchmark where lower is better. The performance effect of running the benchmark in Docker is negligible, at about 0.1\%. For the benchmark with large prime numbers, the t-test statistic is -0.33021 and the p-value is 0.74972. For the benchmark with small prime numbers, the t-test statistic is 0.24674 and the p-value is 0.81491. Therefore, there is no significant difference in running the sysbench CPU benchmark inside a Docker container and natively.  
+	Fig. \ref{fig:cpu} shows the execution time of the Sysbench CPU benchmark where lower is better. The performance effect of running the benchmark in Docker is negligible, at about 0.1\%. For the benchmark with large prime numbers, the t-test statistic is -0.33021 and the p-value is 0.74972. For the benchmark with small prime numbers, the t-test statistic is 0.24674 and the p-value is 0.81491. Therefore, there is no significant difference in running the Sysbench CPU benchmark inside a Docker container and natively.  
 	
 	\subsection{Disk I/O Performance}
-	Sysbench also has a set of file I/O benchmarks that characterize disk performance. There are three stages for a sysbench I/O benchmark. In the \texttt{prepare} stage, sysbench creates the files. The \texttt{run} stage is where the I/O operations for the benchmark are performed. Finally, there is a \texttt{cleanup} stage where files created for the benchmark are deleted. Sysbench supports many I/O operations, including:
+	Sysbench also has a set of file I/O benchmarks that characterize disk performance. There are three stages for a Sysbench I/O benchmark. In the \texttt{prepare} stage, Sysbench creates the files. The \texttt{run} stage is where the I/O operations for the benchmark are performed. Finally, there is a \texttt{cleanup} stage where files created for the benchmark are deleted. Sysbench supports many I/O operations, including:
 	\begin{itemize}
 		\item sequential write
 		\item sequential read
@@ -211,23 +211,23 @@
 		\item random write
 		\item combined random read/write
 	\end{itemize}
-	For the workloads, we have configured sysbench to create a set of files with the total size of files to 5 GB. In order to clear the file system caches between each run, we unmount and format the file system. An example script for formatting a partition and mounting it in Docker to execute the random read benchmark is shown in Listing \ref{lst:sysbenchio}. The accompanying Dockerfile in Listing \ref{lst:dockerfile} takes the \texttt{sysbench-single.sh} script in the current directory and adds it to the working directory in the Docker image. Similarly, for measuring native I/O performance we unmount and remount a separate partition to clear the file system cache. 
+	For the workloads, we have configured Sysbench to create a set of files with the total size of files to 5 GB. In order to clear the file system caches between each run, we unmount and format the file system. An example script for formatting a partition and mounting it in Docker to execute the random read benchmark is shown in Listing \ref{lst:Sysbenchio}. The accompanying Dockerfile in Listing \ref{lst:dockerfile} takes the \texttt{Sysbench-single.sh} script in the current directory and adds it to the working directory in the Docker image. Similarly, for measuring native I/O performance we unmount and remount a separate partition to clear the file system cache. 
 	
-	\lstset{caption=Sysbench File I/O Random Read Bash Script, label=lst:sysbenchio}
+	\lstset{caption=Sysbench File I/O Random Read Bash Script, label=lst:Sysbenchio}
 	\begin{lstlisting}
 	sudo mkfs.btrfs -f /dev/sdb1
 	sudo mount /dev/sdb1 /mnt/benchmark/
-	cat > sysbench-single.sh <<EOF
+	cat > Sysbench-single.sh <<EOF
 	#!/bin/sh
 	cd /benchmark
-	sysbench --test=fileio --file-total-size=5G prepare
-	sysbench --test=fileio --file-total-size=5G --file-test-mode=rndrd \
-	run >> /results/sysbench-file-randread.log
-	sysbench --test=fileio --file-total-size=5G cleanup
+	Sysbench --test=fileio --file-total-size=5G prepare
+	Sysbench --test=fileio --file-total-size=5G --file-test-mode=rndrd \
+	run >> /results/Sysbench-file-randread.log
+	Sysbench --test=fileio --file-total-size=5G cleanup
 	EOF
 	sudo docker build -t benchmark .
 	sudo docker run -v /results:/results -v /mnt/benchmark:/benchmark \
-	benchmark ./sysbench-single.sh
+	benchmark ./Sysbench-single.sh
 	sudo docker rmi -f benchmark
 	sudo umount /mnt/benchmark/
 	\end{lstlisting}
@@ -245,7 +245,7 @@
 	\begin{figure}
 		\centering
 		{\includegraphics[width=150mm]{disk1}}
-		\caption{ Disk Throughput achieved by running sysbench.
+		\caption{ Disk Throughput achieved by running Sysbench.
 			Results for sequential writes, sequential reads, and random reads are shown.
 		}
 		\label{fig:disk1}
@@ -254,7 +254,7 @@
 	\begin{figure}
 		\centering
 		{\includegraphics[width=150mm]{disk2}}
-		\caption{ Disk Throughput achieved by running sysbench.
+		\caption{ Disk Throughput achieved by running Sysbench.
 			Results for random writes are shown.
 		}
 		\label{fig:disk2}
@@ -277,30 +277,30 @@
 	We ran the
 	STREAM benchmark with an array size of 10 million elements, or
 	a total memory requirement of 0.2 gigabytes. The particular CPU
-	where we ran the benchmarks had 4 physical cores, each with a L2 cache size of 256 kilobytes. 
-	Therefore, the CPU has a total L2 cache size of 1MB, which this test exceeded by
-	two orders of magnitude.
+	where we ran the benchmarks had 4 physical cores, each with a L2 cache size of 256 kilobytes and a L3 cache size of 1 megabyte. 
+	Therefore, the CPU has a total L2 cache size of 1 MB and L3 cache size of 4 MB, which this test exceeded by
+	two orders of magnitude. 
 	
 	The results from running STREAM 5 times are plotted in Fig. \ref{fig:mem} where throughput is in megabytes per second. 
-	The test consisted of multiple repetitions of four the kernels. The best results of the 10 trials are chosen to calculate the throughput \cite{mccalpin}. 
+	The test consisted of 10 repetitions of four of the kernels. The best results of the 10 trials are chosen to calculate the throughput \cite{mccalpin}. STREAM runs the code with many different offsets and chooses the best offset. The intent of STREAM is to find the memory bandwidth under optimal conditions \cite{mccalpin2}. 
 	For all of the operations, the difference in throughput between running in a Docker container and natively is less than 3\%. For some operations, the best rates out of 10 were better higher in Docker than on native. This may be the result of better process isolation in a Docker container. 
 	
 	\section{Discussion}
-	Execution time, memory throughput, and disk I/O throughput vary widely depending on the setup of the experiment. Nevertheless, if care is taken to the setup, execution time, memory throughput, and disk I/O performance in a Docker container are similar to native performance. In the sysbench CPU benchmarks, the results on Docker and native differed by less than 1\%. In the STREAM memory benchmarks, again the performance was the same with less than 3\% difference. Docker containers performed at about the same level in the sysbench disk I/O benchmarks. Although the disk I/O benchmarks showed the greatest variation in the measurements, the performance difference was within 5\%. These differences in the execution time, memory throughput, and disk I/O throughput were not statistically significant. 
+	Execution time, memory throughput, and disk I/O throughput vary widely depending on the setup of the experiment. Nevertheless, if care is taken during the setup, the execution time, memory throughput, and disk I/O performance in a Docker container are similar to native performance. In the Sysbench CPU benchmarks, the results on Docker and native differed by less than 1\%. In the STREAM memory benchmarks, again the performance was the same with less than 3\% difference. Docker containers performed at about the same level in the Sysbench disk I/O benchmarks. Although the disk I/O benchmarks showed the greatest variation in the measurements, the performance difference was not significant. Overall, the differences in the execution time, memory throughput, and disk I/O throughput were not statistically significant based on the t-test statistics. 
 	
 	
 	\subsection{Lessons Learned}
-	In order to compare the performance of benchmarks running in Docker to their native performance, care must be taken for the experiment setup. For our initial experiment setup, we ran our benchmarks on the Datamill infrastructure with Gentoo workers. Datamill is an infrastructure for automating performance evaluation that runs packages across a group of distributed workers. Due to the lack of a Gentoo container, we built a Docker image for running the benchmarks with the necessary dependencies from Ubuntu. The result was the memory and CPU intensive benchmarks performed better in the Docker container than on the native host. This was due to a mismatch of GCC versions in the Docker container and the Gentoo host. Gentoo used an older version of GCC. GCC on the Gentoo host were at version 4.9.3, compared to version 5.4.0 in the Docker container based on Ubuntu. As a result, the memory and CPU intensive benchmarks in the Docker container were more optimized than those ran on the Gentoo host. 
+	In order to compare the performance of benchmarks running in Docker to their native performance, care must be taken for the experiment setup. For our initial experiment setup, we ran our benchmarks on the Datamill infrastructure with Gentoo workers. Datamill is an infrastructure for automating performance evaluation that runs packages across a group of distributed workers. Due to the lack of a Gentoo container, we built a Docker image for running the benchmarks with the necessary dependencies from Ubuntu. The results showed the memory and CPU intensive benchmarks performed better in the Docker container than on the native host. This was due to a mismatch of GCC versions in the Docker container and the Gentoo host. Gentoo used an older version of GCC. GCC on the Gentoo host were at version 4.9.3, compared to version 5.4.0 in the Docker container based on Ubuntu. As a result, the memory and CPU intensive benchmarks in the Docker container were more optimized than those run on the Gentoo host. 
 	
 	After switching to Ubuntu 16.04 for both the native baseline and the Docker container, the memory and  CPU intensive benchmarks had the same level of performance natively and in the container. However, the disk I/O benchmarks showed a performance gap with this round of experiments. After further investigation, we found that the mount options were different for the partitions in the Docker container and native baseline. We ran the native benchmarks in \texttt{/home}, while Docker stored container images in \texttt{/var}. \texttt{/home} was on a separate partition and had different mount options from the partition for \texttt{var}. 
 	
-	Another area of interesting performance variation between native and Docker container performance is with USB mounted partitions. With USB partitions, we found that the random write performance was much worse in Docker than on native. Random write throughput on native was 6 times the throughput in a Docker container. Also, the sequential write throughput on native was more than 10 times the throughput in a Docker container. Clearly, the kernel mount namespace or cgroups impose additional restrictions for USB partitions compared to hard drive partitions. These experiments were done on a removable USB drive where the file system was formatted and unmounted between test runs. The USB had a total capacity of 16GB and a USB 3.0 interface. 
+	Another area of interesting performance variation between native and Docker container performance is with USB mounted partitions. With USB partitions, we found that the random write performance was much worse in Docker than on native. Random write throughput on native was 6 times the throughput in a Docker container. Also, the sequential write throughput on native was more than 10 times the throughput in a Docker container. Clearly, the kernel mount namespace or cgroups impose additional restrictions for USB partitions compared to hard drive partitions. These experiments were done on a removable USB drive where the file system was formatted and unmounted between test runs. The USB had a total capacity of 16 GB and a USB 3.0 interface. 
 	
 	\section{Conclusions and Future Work}
 	
-	Container based technologies are an interesting alternative to traditional virtual machines. Docker is a popular container technology that runs on Linux using kernel cgroups and namespaces. It is a lightweight alternative to hypervisor based technologies such as KVM. Docker facilitates the deployment of services, allowing more software to be deployed on a physical machine compared to traditional virtual machines. In this paper, the performance evaluation of Docker shows that benchmarks run on Docker have the same level of performance as on a native machine. 
+	Container based technologies are an interesting alternative to traditional virtual machines. Docker is a popular container technology that runs on Linux using kernel cgroups and namespaces. It is a lightweight alternative to hypervisor based technologies such as KVM. Docker facilitates the deployment of services and allows more software services to be deployed on a physical machine compared to traditional virtual machines. In this paper, the performance evaluation of Docker shows that benchmarks run on Docker have the same level of performance as on a native machine. 
 	
-	The results show that the performance of Docker containers is on par with native performance. In the sysbench CPU benchmarks, the results on Docker and native were about the same. In the STREAM memory benchmarks, performance was at the same level again with no significant difference. In the disk I/O benchmarks, read and write operations in Docker performed at the same level as native. 
+	The results show that the performance of Docker containers is on par with native performance. In the Sysbench CPU benchmarks, the results on Docker and native were about the same. In the STREAM memory benchmarks, performance was at the same level again with no significant difference. In the disk I/O benchmarks, read and write operations in Docker performed at the same level as native. 
 	
 	One of the goals of this research paper was to Docker suitable for replicable performance evaluation experiments. In other words, the goal is to determine whether packaging benchmarks in a Docker container facilitate reproducing the same procedures, measuring systems, and operating conditions to obtain the measurements reported. There are two aspects to this. First, whether Docker aids in experimental setup portability. Second, whether Docker introduces a small enough overhead that measurements are similar to those made on a native machine. 
 	
@@ -324,48 +324,51 @@
 		Rosen, Rami. \textit{Linux Kernel Networking}. Implementation and Theory. Springer Science and Business Media New York, New York, USA, 2013
 		
 		\bibitem{merkel}
-		Merkel, Dirk. "Docker: lightweight linux containers for consistent development and deployment." Linux Journal 2014.239 (2014): 2.
+		Merkel, Dirk. ``Docker: lightweight Linux containers for consistent development and deployment." Linux Journal 2014.239 (2014): 2.
 		
 		\bibitem{anderson}
-		Anderson, Charles. "Docker." IEEE Software 32.3 (2015).
+		Anderson, Charles. ``Docker." IEEE Software 32.3 (2015).
 		
 		\bibitem{joy}
-		Joy, Ann Mary. "Performance comparison between linux containers and virtual machines." Computer Engineering and Applications (ICACEA), 2015 International Conference on Advances in. IEEE, 2015.
+		Joy, Ann Mary. ``Performance comparison between Linux containers and virtual machines." Computer Engineering and Applications (ICACEA), 2015 International Conference on Advances in. IEEE, 2015.
 		
 		\bibitem{felter}
-		Felter, Wes, et al. "An updated performance comparison of virtual machines and linux containers." Performance Analysis of Systems and Software (ISPASS), 2015 IEEE International Symposium On. IEEE, 2015.
+		Felter, Wes, et al. ``An updated performance comparison of virtual machines and Linux containers." Performance Analysis of Systems and Software (ISPASS), 2015 IEEE International Symposium On. IEEE, 2015.
 		
 		\bibitem{morabito}
-		Morabito, Roberto, Jimmy Kjällman, and Miika Komu. "Hypervisors vs. lightweight virtualization: a performance comparison." Cloud Engineering (IC2E), 2015 IEEE International Conference on. IEEE, 2015.
+		Morabito, Roberto, Jimmy Kjällman, and Miika Komu. ``Hypervisors vs. lightweight virtualization: a performance comparison." Cloud Engineering (IC2E), 2015 IEEE International Conference on. IEEE, 2015.
 		
 		\bibitem{mccalpin}
-		McCalpin, John D.: "STREAM: Sustainable Memory Bandwidth in
+		McCalpin, John D.: ``STREAM: Sustainable Memory Bandwidth in
 		High Performance Computers", a continually updated technical report
-		(1991-2007), available at: "http://www.cs.virginia.edu/stream/"
+		(1991-2007), available at: ``http://www.cs.virginia.edu/stream/"
+		
+		\bibitem{mccalpin2}
+		McCalpin, John D. ``Sustainable memory bandwidth in current high performance computers." Silicon Graphics Inc (1995).
 		
 		\bibitem{augusto}
-		de Oliveira, Augusto Born, et al. "Datamill: Rigorous performance evaluation made easy." Proceedings of the 4th ACM/SPEC International Conference on Performance Engineering. ACM, 2013.
+		de Oliveira, Augusto Born, et al. ``Datamill: Rigorous performance evaluation made easy." Proceedings of the 4th ACM/SPEC International Conference on Performance Engineering. ACM, 2013.
 		
 		\bibitem{xavier}
-		Xavier, Miguel Gomes, Marcelo Veiga Neves, and Cesar Augusto Fonticielha De Rose. "A performance comparison of container-based virtualization systems for mapreduce clusters." 2014 22nd Euromicro International Conference on Parallel, Distributed, and Network-Based Processing. IEEE, 2014.
+		Xavier, Miguel Gomes, Marcelo Veiga Neves, and Cesar Augusto Fonticielha De Rose. ``A performance comparison of container-based virtualization systems for mapreduce clusters." 2014 22nd Euromicro International Conference on Parallel, Distributed, and Network-Based Processing. IEEE, 2014.
 		
 		\bibitem{kopytov}
-		Kopytov, Alexey. "SysBench manual." MySQL AB (2012).
+		Kopytov, Alexey. ``SysBench manual." MySQL AB (2012).
 		
 		\bibitem{raho}
-		Raho, Moritz, et al. "KVM, Xen and Docker: A performance analysis for ARM based NFV and cloud computing." Information, Electronic and Electrical Engineering (AIEEE), 2015 IEEE 3rd Workshop on Advances in. IEEE, 2015.
+		Raho, Moritz, et al. ``KVM, Xen and Docker: A performance analysis for ARM based NFV and cloud computing." Information, Electronic and Electrical Engineering (AIEEE), 2015 IEEE 3rd Workshop on Advances in. IEEE, 2015.
 		
 		\bibitem{bukh}
-		Bukh, Per Nikolaj D., and Raj Jain. "The art of computer systems performance analysis, techniques for experimental design, measurement, simulation and modeling." (1992): 113-115.
+		Bukh, Per Nikolaj D., and Raj Jain. ``The art of computer systems performance analysis, techniques for experimental design, measurement, simulation and modeling." (1992): 113-115.
 		
-		\bibitem{sysbench}
-		Kopytov, Alexey. "SysBench: A System Performance Benchmark, 2004."
+		\bibitem{Sysbench}
+		Kopytov, Alexey. ``SysBench: A System Performance Benchmark, 2004."
 		
 		\bibitem{estrada}
-		Estrada, Zachary J., et al. "A performance evaluation of sequence alignment software in virtualized environments." Cluster, Cloud and Grid Computing (CCGrid), 2014 14th IEEE/ACM International Symposium on. IEEE, 2014.
+		Estrada, Zachary J., et al. ``A performance evaluation of sequence alignment software in virtualized environments." Cluster, Cloud and Grid Computing (CCGrid), 2014 14th IEEE/ACM International Symposium on. IEEE, 2014.
 		
 		\bibitem{pahl}
-		Pahl, Claus. "Containerisation and the PaaS cloud." IEEE Cloud Computing2.3 (2015): 24-31.
+		Pahl, Claus. ``Containerisation and the PaaS cloud." IEEE Cloud Computing2.3 (2015): 24-31.
 		
 	\end{thebibliography}
 	
